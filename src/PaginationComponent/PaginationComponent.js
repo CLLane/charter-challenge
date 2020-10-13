@@ -15,7 +15,6 @@ let PaginationComponent = (props) => {
       </thead>
       <tbody>
         {props.paginatedList.map((restaurant, i) => {
-          console.log('i :>> ', i);
           if(props.activePage === (i+1)){
             return <TableRow restaurant={restaurant} />
           }
