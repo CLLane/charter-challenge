@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { fetchRestaurants } from '../src/utilities/apiCalls'
+import PaginationComponent from '../src/PaginationComponent/PaginationComponent'
 
 import './App.css'
 
@@ -8,28 +9,55 @@ class App extends Component {
     super()
     this.state = {
       error: '',
-      restaurantList: []
+      restaurantList: [],
+      pageNumbers: 0,
+      paginatedList: [],
+      activePage: 1
     }
   }
-  componentDidMount () {
-    this.getRestaurantList()
+  async componentDidMount () {
+    await this.getRestaurantList()
+    await this.createPaginatedList(this.state.restaurantList)
   }
+
 
   getRestaurantList = async () => {
     try {
       const result = await fetchRestaurants();
-      if(result) {
-        this.setState({ restaurantList: result})
-      }
+      this.setState({restaurantList: result})
     } catch (error) {
       this.setState({ error: error.message })
     }
   }
   
+  createPaginatedList = async (list) => {
+    let sortedList = this.alphabetizeList(list);
+    let pageNumbers = this.setActivePages(list);
+    let paginatedList = [];
+    for( let i = 0; i < pageNumbers; i++) {
+      paginatedList.push(sortedList.splice(0, 10))
+    }
+    await this.setState({
+      restaurantList: paginatedList.flatMap(el => el),
+      pageNumbers: pageNumbers,
+      paginatedList: paginatedList,
+      
+    })
+  }
+
+  setActivePages = (list) => {
+    return Math.ceil(list.length / 10)
+  }
+
+  alphabetizeList = (list) => {
+    return list.sort((a,b) => (a.name < b.name ? -1 : 1))
+  }
+
   
   render () {
-    console.log('this.state.restaurantList :>> ', this.state.restaurantList);
-    return <div className='App' />
+    return (
+      <PaginationComponent paginatedList={this.state.paginatedList} activePage={this.state.activePage}/>
+    )
   }
 }
 
