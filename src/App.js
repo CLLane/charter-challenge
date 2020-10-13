@@ -53,10 +53,21 @@ class App extends Component {
     return list.sort((a,b) => (a.name < b.name ? -1 : 1))
   }
 
+  updateActivePage = (e) => {
+    e.preventDefault();
+    this.setState({
+      activePage: parseInt(e.target.value)
+    })
+  }
   
   render () {
     return (
+      <>
       <PaginationComponent paginatedList={this.state.paginatedList} activePage={this.state.activePage}/>
+      <div>
+        {this.state.paginatedList.map((el, i) => {return <button onClick={(e) => this.updateActivePage(e)} value={i +1}>{i + 1}</button>})}
+      </div>
+      </>
     )
   }
 }
