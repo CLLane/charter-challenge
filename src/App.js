@@ -29,24 +29,24 @@ class App extends Component {
   getRestaurantList = async () => {
     try {
       const result = await fetchRestaurants()
-      this.setState({ restaurantList: result })
+      await this.setState({ restaurantList: result })
     } catch (error) {
       this.setState({ error: error.message })
     }
   }
 
-  createPaginatedList = list => {
+  createPaginatedList = async list => {
     let sortedList = this.alphabetizeList(list)
     let pageNumbers = this.setPageNumbers(list)
     let paginatedList = []
     for (let i = 0; i < pageNumbers; i++) {
-      paginatedList.push(sortedList.splice(0, 10))
+      paginatedList.push(sortedList.slice(i * 10, 10 + i * 10))
     }
-    this.setState({
-      restaurantList: paginatedList.flatMap(el => el),
+    await this.setState({
       pageNumbers: paginatedList.length,
       paginatedList: paginatedList
     })
+    console.log('this.state3:>> ', this.state)
   }
 
   setPageNumbers = list => {
@@ -64,37 +64,101 @@ class App extends Component {
     })
   }
 
-  onFilterSubmit = async (e, formState) => {
-    e.preventDefault()
+  generateGenreList = list => {
+    let genreList = list.reduce(
+      (acc, cv) => {
+        let objGenreList = cv.genre.split(',')
+        objGenreList.forEach(genre => {
+          if (!acc.includes(genre)) {
+            acc.push(genre)
+          }
+        })
+        return acc
+      },
+      ['All']
+    )
+    return genreList.sort((a, b) => (a < b ? -1 : 1))
+  }
+
+  generateStateList = list => {
+    return list.reduce(
+      (acc, cv) => {
+        if (!acc.includes(cv.state)) {
+          acc.push(cv.state)
+        }
+        return acc
+      },
+      ['All']
+    )
+  }
+
+  onDropDownSelection = async e => {
     await this.setState({
       filter: {
-        state: formState.state,
-        genre: formState.genre,
-        name: formState.name
-      }
+        ...this.state.filter,
+        [e.target.name]: e.target.value
+      },
+      activePage: 1
     })
-    let filteredList = []
-   if(this.state.filter.state){
-     filteredList = this.state.restaurantList.filter(el => el.state.toUpperCase() === this.state.filter.state.toUpperCase())
-   }
-   if(this.state.filter.state && this.state.filter.genre) {
-     filteredList = filteredList.filter(el => el.genre.split(',').map(el=> el.toUpperCase()).includes(this.state.filter.genre.toUpperCase()))
-   } else if(this.state.filter.genre ) {
-     filteredList = this.state.restaurantList.filter(el => el.genre.split(',').map(el => el.toUpperCase()).includes(this.state.filter.genre.toUpperCase()))
-   }
+    this.filterList()
+  }
 
-   if((this.state.filter.state && this.state.filter.name) || (this.state.filter.name && this.state.filter.genre)) {
-     filteredList = filteredList.filter(el => el.name.toUpperCase() === this.state.filter.name.toUpperCase())
-   } else if ( this.state.filter.name ) {
-     filteredList = this.state.restaurantList.filter(el => el.name.toUpperCase() === this.state.filter.name.toUpperCase())
-   }
-   this.createPaginatedList(filteredList)
+  filterList = () => {
+    let genreFilteredList = this.state.restaurantList.reduce((acc, cv) => {
+      if (
+        this.state.filter.genre &&
+        cv.genre
+          .split(',')
+          .map(el => el.toUpperCase())
+          .includes(this.state.filter.genre.toUpperCase())
+      ) {
+        acc.push(cv)
+      }
+      return acc
+    }, [])
+    let stateFilteredList = this.state.restaurantList.reduce((acc, cv) => {
+      if (
+        this.state.filter.state &&
+        cv.state
+          .split(',')
+          .map(el => el.toUpperCase())
+          .includes(this.state.filter.state.toUpperCase())
+      ) {
+        acc.push(cv)
+      }
+      return acc
+    }, [])
+
+    let finalList = this.state.restaurantList.reduce((acc, cv) => {
+      if (genreFilteredList.length < 1 && stateFilteredList.length < 1) {
+        acc = this.state.restaurantList
+      }
+      if (genreFilteredList.length > 0 && stateFilteredList.length < 1) {
+        acc = genreFilteredList
+      }
+      if (genreFilteredList.length < 1 && stateFilteredList.length > 0) {
+        acc = stateFilteredList
+      }
+      if (genreFilteredList.length > 0 && stateFilteredList.length > 0) {
+        genreFilteredList.forEach(el => {
+          if (stateFilteredList.includes(el) && !acc.includes(el)) {
+            acc.push(el)
+          }
+        })
+      }
+      return acc
+    }, [])
+    this.createPaginatedList(finalList)
   }
 
   render () {
     return (
       <>
-        <FilterForm onFilterSubmit={this.onFilterSubmit} />
+        <FilterForm
+          genreList={this.generateGenreList(this.state.restaurantList)}
+          stateList={this.generateStateList(this.state.restaurantList)}
+          onDropDownSelection={e => this.onDropDownSelection(e)}
+        />
         <PaginationComponent
           paginatedList={this.state.paginatedList}
           activePage={this.state.activePage}

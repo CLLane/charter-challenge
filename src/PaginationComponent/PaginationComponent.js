@@ -1,9 +1,9 @@
-import React from 'react';
-import TableRow from '../TableRow/TableRow';
+import React from 'react'
+import TableRow from '../TableRow/TableRow'
 
-let PaginationComponent = (props) => {
-  console.log('paginatedList :>> ', props);
-  return(
+let PaginationComponent = props => {
+  console.log('paginatedList :>> ', props)
+  return (
     <table>
       <thead>
         <tr>
@@ -15,7 +15,7 @@ let PaginationComponent = (props) => {
       </thead>
       <tbody>
         {props.paginatedList.map((restaurant, i) => {
-          if(props.activePage === (i+1)){
+          if (props.activePage === i + 1) {
             return <TableRow restaurant={restaurant} />
           }
         })}
@@ -24,4 +24,4 @@ let PaginationComponent = (props) => {
   )
 }
 
-export default PaginationComponent;
+export default PaginationComponent

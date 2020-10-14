@@ -1,16 +1,19 @@
 import React from 'react'
 
 let TableRow = props => {
+  console.log('props', props)
   return (
     <>
-    {props.restaurant.map(el => 
-      <tr>
-        <td>{el.name}</td>
-        <td>{el.city}, {el.state}</td>
-        <td>{el.genre.replace(/,/g, ' | ')}</td>
-        <td>{el.telephone}</td>
-      </tr>
-      )}
+      {props.restaurant.map(el => (
+        <tr>
+          <td>{el.name}</td>
+          <td>
+            {el.city}, {el.state}
+          </td>
+          <td>{el.genre.replace(/,/g, ' | ')}</td>
+          <td>{el.telephone}</td>
+        </tr>
+      ))}
     </>
   )
 }

@@ -4,26 +4,47 @@ class FilterForm extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      city: '',
-      state: '',
-      genre: '',
       name: ''
     }
   }
-  handleChange(event) {
+  handleChange (event) {
     this.setState({ [event.target.name]: event.target.value })
   }
 
   render () {
+    console.log('this.props :>> ', this.props)
     return (
-      <form >
-        <p>State:</p>
-        <input type='text' name='state' value={this.state.state} onChange={this.handleChange.bind(this)}/>
-        <p>Genre:</p>
-        <input type='text' name='genre' value={this.state.genre} onChange={this.handleChange.bind(this)}/>
+      <form>
+        <label>Genre: </label>
+        <select name='genre' onChange={e => this.props.onDropDownSelection(e)}>
+          {this.props.genreList.map((genre, key) => {
+            return (
+              <option key={key} value={genre}>
+                {genre}
+              </option>
+            )
+          })}
+        </select>
+        <label>State: </label>
+        <select name='state' onChange={e => this.props.onDropDownSelection(e)}>
+          {this.props.stateList.map((state, key) => {
+            return (
+              <option key={key} value={state}>
+                {state}
+              </option>
+            )
+          })}
+        </select>
         <p>Name:</p>
-        <input type='text' name='name' value={this.state.name} onChange={this.handleChange.bind(this)}/>
-        <button onClick={(e) => this.props.onFilterSubmit(e, this.state)}>Submit</button>
+        <input
+          type='text'
+          name='name'
+          value={this.state.name}
+          onChange={this.handleChange.bind(this)}
+        />
+        <button onClick={e => this.props.onFilterSubmit(e, this.state)}>
+          Submit
+        </button>
       </form>
     )
   }
