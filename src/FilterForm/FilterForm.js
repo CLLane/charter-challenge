@@ -4,15 +4,16 @@ class FilterForm extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      name: ''
+      name: '',
     }
   }
-  handleChange (event) {
-    this.setState({ [event.target.name]: event.target.value })
+  handleChange = async (event) => {
+    await this.setState({ [event.target.name]: event.target.value })
   }
 
+  
   render () {
-    console.log('this.props :>> ', this.props)
+    // console.log('this.props :>> ', this.props)
     return (
       <form>
         <label>Genre: </label>
@@ -39,12 +40,12 @@ class FilterForm extends Component {
         <input
           type='text'
           name='name'
-          value={this.state.name}
-          onChange={this.handleChange.bind(this)}
+          onChange={this.handleChange}
         />
-        <button onClick={e => this.props.onFilterSubmit(e, this.state)}>
+        <button value={this.state.name} onClick={(e) => this.props.onSearchFilterSubmit(e)}>
           Submit
         </button>
+        <button onClick={(e) => this.props.resetClearButton(e)}>Clear</button>
       </form>
     )
   }

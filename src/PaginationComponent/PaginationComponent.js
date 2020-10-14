@@ -3,7 +3,8 @@ import TableRow from '../TableRow/TableRow'
 
 let PaginationComponent = props => {
   console.log('paginatedList :>> ', props)
-  return (
+  if(!props.error){return (
+    <>
     <table>
       <thead>
         <tr>
@@ -21,7 +22,19 @@ let PaginationComponent = props => {
         })}
       </tbody>
     </table>
-  )
+    <div>
+      {props.paginatedList.map((el, i) => {
+        return (
+          <button onClick={e => props.updateActivePage(e)} value={i + 1}>
+            {i + 1}
+          </button>
+        )
+      })}
+    </div>
+    </>
+  )} else {
+    return <p>{props.error}</p>
+  }
 }
 
 export default PaginationComponent

@@ -42,11 +42,16 @@ class App extends Component {
     for (let i = 0; i < pageNumbers; i++) {
       paginatedList.push(sortedList.slice(i * 10, 10 + i * 10))
     }
-    await this.setState({
-      pageNumbers: paginatedList.length,
-      paginatedList: paginatedList
-    })
-    console.log('this.state3:>> ', this.state)
+    if (paginatedList.length > 0) {
+      await this.setState({
+        pageNumbers: paginatedList.length,
+        paginatedList: paginatedList
+      })
+    } else {
+      await this.setState({
+        error: 'Could not find a restaurant to match your query'
+      })
+    }
   }
 
   setPageNumbers = list => {
@@ -93,13 +98,24 @@ class App extends Component {
   }
 
   onDropDownSelection = async e => {
-    await this.setState({
-      filter: {
-        ...this.state.filter,
-        [e.target.name]: e.target.value
-      },
-      activePage: 1
-    })
+    if(e.target.name === 'All') {
+      await this.setState({
+        filter: {
+          ...this.state.filter,
+          [e.target.name]: ''
+        },
+        activePage: 1
+      })
+    } else {
+
+      await this.setState({
+        filter: {
+          ...this.state.filter,
+          [e.target.name]: e.target.value
+        },
+        activePage: 1
+      })
+    }
     this.filterList()
   }
 
@@ -150,6 +166,40 @@ class App extends Component {
     }, [])
     this.createPaginatedList(finalList)
   }
+  onSearchFilterSubmit = async e => {
+    e.preventDefault()
+    let value = e.target.value.toUpperCase()
+    if (!this.state.filter.state && !this.state.filter.genre) {
+      console.log('this.state.filter.state :>> ', this.state.filter.state);
+      await this.resetClearButton(e)
+    }
+    let x = this.state.paginatedList
+      .flatMap(el => el)
+      .filter(el => {
+        if (
+          el.name
+            .split(' ')
+            .map(el => el.toUpperCase())
+            .includes(value) ||
+          el.state.toUpperCase() === value ||
+          el.genre
+            .split(',')
+            .map(el => el.toUpperCase())
+            .includes(value)
+        ) {
+          return el
+        }
+      })
+    this.createPaginatedList(x)
+  }
+
+  resetClearButton = e => {
+    e.preventDefault()
+    this.createPaginatedList(this.state.restaurantList)
+    this.setState({
+      error: ''
+    })
+  }
 
   render () {
     return (
@@ -158,20 +208,15 @@ class App extends Component {
           genreList={this.generateGenreList(this.state.restaurantList)}
           stateList={this.generateStateList(this.state.restaurantList)}
           onDropDownSelection={e => this.onDropDownSelection(e)}
+          onSearchFilterSubmit={e => this.onSearchFilterSubmit(e)}
+          resetClearButton={e => this.resetClearButton(e)}
         />
         <PaginationComponent
+          error={this.state.error}
           paginatedList={this.state.paginatedList}
           activePage={this.state.activePage}
+          updateActivePage={this.updateActivePage}
         />
-        <div>
-          {this.state.paginatedList.map((el, i) => {
-            return (
-              <button onClick={e => this.updateActivePage(e)} value={i + 1}>
-                {i + 1}
-              </button>
-            )
-          })}
-        </div>
       </>
     )
   }
